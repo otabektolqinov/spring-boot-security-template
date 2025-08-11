@@ -3,12 +3,11 @@ package com.templates.security.controller;
 import com.templates.security.dto.ApiResponse;
 import com.templates.security.dto.LoginDto;
 import com.templates.security.dto.UserDto;
+import com.templates.security.dto.UserResponseDto;
 import com.templates.security.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +24,12 @@ public class UserController {
     @PostMapping("/login")
     public ApiResponse<String> createUser(@RequestBody LoginDto dto){
         return userService.getToken(dto);
+    }
+
+    @GetMapping
+    @PreAuthorize(value = "authentication.principal.users.id == #id")
+    public ApiResponse<UserResponseDto> getUserById(@RequestParam("id") Integer id){
+        return userService.getUserById(id);
     }
 
 }

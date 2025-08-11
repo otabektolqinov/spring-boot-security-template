@@ -2,6 +2,7 @@ package com.templates.security.service.mapper;
 
 import com.templates.security.domain.Users;
 import com.templates.security.dto.UserDto;
+import com.templates.security.dto.UserResponseDto;
 import com.templates.security.enums.Role;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,13 @@ public class UserMapper {
         return UserDto.builder()
                 .age(users.getAge())
                 .id(users.getId())
+                .username(users.getUsername())
+                .build();
+    }
+
+    public UserResponseDto toResponseDto(Users users){
+        return UserResponseDto.builder()
+                .age(users.getAge())
                 .username(users.getUsername())
                 .build();
     }
