@@ -55,6 +55,19 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
+
+        if (jwtUtil.getClaim("type", token, String.class).equals("RefreshToken")){
+            response.setStatus (HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            var errorDto = new ErrorDto (
+                    request.getRequestURI (),
+                    "Refresh token cannot be used as access token",
+                    HttpServletResponse.SC_UNAUTHORIZED
+            );
+            response.getWriter ().write (objectMapper.writeValueAsString (errorDto));
+            return;
+        }
+
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtUtil.validateToken(token, username)) {

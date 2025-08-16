@@ -1,9 +1,15 @@
 package com.templates.security.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+@Getter
+@Setter
 public class ErrorDto {
     private final String errorPath;
     private final String errorMessage;

@@ -36,7 +36,8 @@ public class SecurityConfig {
             "/swagger-resources/**",    // Swagger resources
             "/api/v1/swagger.json",     // Custom API docs
             "/users/login",             // Login endpoint
-            "/users/register"
+            "/users/register",
+            "/users/refresh"
     };
 
     @Bean

@@ -3,6 +3,7 @@ package com.templates.security.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -15,16 +16,30 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512); // Xavfsiz kalit
+    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     private final long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 soat
+    private final long refreshTokenExpiration = 7 * 24 * 60 * 60 * 1000;
 
     public String createAccessToken(String subject, Integer userId) {
         //
         return Jwts.builder()
                 .subject(subject)
                 .claim("userId", userId)
+                .claim("type", "AccessToken")
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SECRET_KEY)
+                .compact();
+    }
+
+    public String createRefreshToken(String subject, Integer userId) {
+
+        return Jwts.builder()
+                .subject(subject)
+                .claim("userId", userId)
+                .claim("type", "RefreshToken")
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(SECRET_KEY)
                 .compact();
     }
@@ -42,6 +57,19 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
+    public <T> T getClaim(
+            @NonNull String name,
+            @NonNull String token,
+            @NonNull Class<T> type
+    ) {
+        try {
+            return extractAllClaims (token)
+                    .get (name, type);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET_KEY)
@@ -55,9 +83,31 @@ public class JwtUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+    public boolean validateToken(String token, String username) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY) // server secret
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String tokenUsername = claims.getSubject();
+            return (tokenUsername.equals(username) && !claims.getExpiration().before(new Date()));
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+    public boolean validateRefreshToken(String token){
+        try {
+            Jwts.parser()
+                    .setSigningKey(SECRET_KEY) // bu yerda serverdagi secret yoki public key bo‘ladi
+                    .build()
+                    .parseClaimsJws(token); // bu yerda signature ham, expiry ham tekshiriladi
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
     }
 
 }
