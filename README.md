@@ -36,7 +36,7 @@ It demonstrates how to secure a Spring Boot application with stateless authentic
 
 ### Example Request (Login)
 ```json
-POST /api/auth/login
+POST /users/login
 {
   "username": "user1",
   "password": "password123"
